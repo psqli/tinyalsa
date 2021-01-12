@@ -1648,6 +1648,18 @@ again:
                 return -1;
             /* fallthrough */
         default:
+	    /*
+	     * If pcm wasn't prepared and prepare succeed, try again.
+	     *
+	     * The PCM is not being prepared in pcm_open() because there
+	     * are PCMs that are not attached to a hardware by default.
+	     * These PCMs are called Dynamic PCMs. See the link below:
+	     *
+	     * https://www.kernel.org/doc/html/v5.10/sound/soc/dpcm.html
+	     */
+	    if (pcm_state(pcm) == PCM_STATE_SETUP && pcm_prepare(pcm) == 0)
+		    goto again;
+
             return oops(pcm, errno, "cannot read/write stream data");
         }
     }
